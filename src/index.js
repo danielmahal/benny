@@ -1,17 +1,44 @@
 import React from 'react'
 
-import createCanvasContainer from './createCanvasContainer'
-import SomeComponent from './SomeComponent'
+import Layer from './Layer'
+
+class SquareOverlay extends Layer {
+  draw(context) {
+    context.save()
+    context.globalCompositeOperation = 'xor'
+    context.fillRect(0, 0, 100, 100)
+    context.restore()
+  }
+}
+
+class Circle extends Layer {
+  draw(context) {
+    context.fillStyle = this.props.color
+    context.beginPath()
+    context.arc(this.props.x, this.props.y, 50, 0, Math.PI * 2)
+    context.fill()
+  }
+}
+
+class CrazyCircle extends Layer {
+  draw(context) {
+    context.fillStyle = `hsl(${Math.sin(this.props.seconds) * 255}, 100%, 50%)`
+    context.beginPath()
+    context.arc(this.props.x, this.props.y, 50, 0, Math.PI * 2)
+    context.fill()
+  }
+}
 
 class Application extends React.Component {
   constructor(props) {
     super(props)
 
-    this.tick = this.tick.bind(this)
-
     this.state = {
-      time: 0
+      crazyCircle: false,
+      seconds: 0
     }
+
+    this.tick = this.tick.bind(this)
   }
 
   requestTick() {
@@ -22,34 +49,30 @@ class Application extends React.Component {
     this.setState({
       seconds: time / 1000
     })
-
     this.requestTick()
-  }
-
-  renderChild(canvas) {
-    if(this.canvasContext) {
-      this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      this.canvasContext.drawImage(canvas, 0, 0)
-    }
   }
 
   componentDidMount() {
-    this.canvas = React.findDOMNode(this.refs.canvas)
-    this.canvasContext = this.canvas.getContext('2d')
-
-    this.forceUpdate()
     this.requestTick()
   }
 
-  componentDidUpdate() {
-
+  toggleCrazyCircle() {
+    this.setState({
+      crazyCircle: !this.state.crazyCircle
+    })
   }
 
   render() {
     return (
       <div>
-        <canvas ref="canvas" />
-        <SomeComponent render={this.renderChild.bind(this)} />
+        <button onClick={this.toggleCrazyCircle.bind(this)}>Toggle crazy circle</button>
+
+        <Layer>
+          <SquareOverlay>
+            {this.state.crazyCircle && <CrazyCircle key="crazy" x="70" y="70" seconds={this.state.seconds} />}
+            <Circle key="red" x={50 +Math.sin(this.state.seconds) * 100} y="100" color="red" />
+          </SquareOverlay>
+        </Layer>
       </div>
     )
   }
