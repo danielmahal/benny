@@ -66,6 +66,10 @@ export default class Layer extends React.Component {
 
   onChildUpdate() {
     this.redraw()
+
+    if(this.props.onUpdate) {
+      this.props.onUpdate()
+    }
   }
 
   render() {
@@ -86,6 +90,8 @@ export default class Layer extends React.Component {
     })
 
     const style = {
+      width: this.props.width / window.devicePixelRatio,
+      height: this.props.height / window.devicePixelRatio,
       display: this.props.debug || !this.props.hasParent ? 'block' : 'none'
     }
 
@@ -99,7 +105,7 @@ export default class Layer extends React.Component {
 }
 
 Layer.defaultProps = {
-  width: window.innerWidth,
-  height: window.innerHeight,
+  width: window.innerWidth * window.devicePixelRatio,
+  height: window.innerHeight * window.devicePixelRatio,
   debug: false
 }
