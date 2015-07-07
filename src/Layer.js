@@ -20,13 +20,13 @@ export default class Layer extends React.Component {
     this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
 
-  draw(context) {}
-
   drawChildren() {
     pluck(sortBy(this.childCanvases, 'order'), 'canvas').forEach(childCanvas => {
       this.canvasContext.drawImage(childCanvas, 0, 0)
     })
   }
+
+  draw(context) {}
 
   componentDidUpdate() {
     this.redraw()
@@ -69,6 +69,8 @@ export default class Layer extends React.Component {
   }
 
   render() {
+    const {width, height} = this.props
+
     const children = React.Children.map(this.props.children, (child, i) => {
       if(child) {
         return React.cloneElement(child, assign({}, child.props, {
@@ -84,15 +86,20 @@ export default class Layer extends React.Component {
     })
 
     const style = {
-      border: '1px red solid',
-      display: this.props.hasParent ? 'none' : 'block'
+      display: this.props.debug || !this.props.hasParent ? 'block' : 'none'
     }
 
     return (
       <div>
-        <canvas ref="canvas" style={style} />
+        <canvas ref="canvas" style={style} width={width} height={height} />
         {children}
       </div>
     )
   }
+}
+
+Layer.defaultProps = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+  debug: false
 }
