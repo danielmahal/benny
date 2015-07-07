@@ -2,6 +2,22 @@ import React from 'react'
 
 import Layer from './Layer'
 
+class Controls extends React.Component {
+  render() {
+    const style = {
+      position: 'absolute',
+      top: 0,
+      left: 0
+    }
+
+    return (
+      <div style={style}>
+        {this.props.children}
+      </div>
+    )
+  }
+}
+
 class SquareOverlay extends Layer {
   draw(context) {
     context.save()
@@ -65,7 +81,9 @@ class Application extends React.Component {
   render() {
     return (
       <div>
-        <button onClick={this.toggleCrazyCircle.bind(this)}>Toggle crazy circle</button>
+        <Controls>
+          <button onClick={this.toggleCrazyCircle.bind(this)}>Toggle crazy circle</button>
+        </Controls>
 
         <Layer>
           <SquareOverlay>
