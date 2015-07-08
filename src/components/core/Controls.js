@@ -8,7 +8,8 @@ export default class Controls extends React.Component {
       left: 0,
       fontFamily: 'monospace',
       background: 'black',
-      color: 'white'
+      color: 'white',
+      WebkitUserSelect: 'none'
     }
 
     return (
