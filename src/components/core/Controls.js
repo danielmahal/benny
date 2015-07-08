@@ -5,7 +5,7 @@ export default class ControlGroup extends React.Component {
     super(props)
 
     this.state = {
-      expanded: true
+      expanded: false
     }
   }
 

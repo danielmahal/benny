@@ -1,5 +1,5 @@
 module.exports = {
-  devtool: 'eval',
+  devtool: 'source-map',
 
   entry: [
     __dirname + '/src/index.html',
