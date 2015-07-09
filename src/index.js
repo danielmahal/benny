@@ -5,7 +5,6 @@ import ParticleMesh from './meshes/ParticleMesh'
 import ParticleDisplayShader from './shaders/ParticleDisplayShader'
 import ParticlePositionShader from './shaders/ParticlePositionShader'
 import ParticleVelocityShader from './shaders/ParticleVelocityShader'
-import MouseForceShader from './shaders/MouseForceShader'
 
 import SimulationTexture from './textures/PingPongTexture'
 import PingPongTexture from './textures/PingPongTexture'
@@ -43,8 +42,8 @@ let init = true
 
 gl.ondraw = function() {
   const forceUniforms = {
-    mouse: {
-      mouse: [Math.random(), Math.random()]
+    drop: {
+      dropPosition: [Math.random(), Math.random()]
     }
   }
 
@@ -69,14 +68,22 @@ gl.ondraw = function() {
 
     alternate.bind(1)
     positionTexture.bind(2)
-    forceTextures['mouse'].bind(3)
 
-    velocityShader.uniforms({
+    const forceUniforms = {}
+
+    Object.keys(forces).forEach((key, i) => {
+      const textureIndex = 3 + i
+
+      forceUniforms[key + 'ForceSampler'] = textureIndex
+      forceTextures[key].bind(textureIndex)
+    })
+
+    velocityShader.uniforms(assign({
       velocitySampler: 1,
       positionSampler: 2,
       mouseForceSampler: 3,
       init: init
-    })
+    }, forceUniforms))
 
     velocityShader.draw(mesh, gl.POINTS)
   })

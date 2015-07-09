@@ -1,7 +1,7 @@
-import MouseForceShader from './shaders/MouseForceShader'
+import DropForceShader from './shaders/DropForceShader'
 
 export default {
-  mouse: {
-    shader: MouseForceShader
+  drop: {
+    shader: DropForceShader
   }
 }
