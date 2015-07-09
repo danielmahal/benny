@@ -2,7 +2,7 @@
   "name": "benny-react",
   "description": "",
   "scripts": {
-    "start": "./node_modules/.bin/nws -d build -p 4000 & webpack -w"
+    "start": "./node_modules/.bin/nws -d build -p 4000 & webpack --watch --progress --colors"
   },
   "dependencies": {
     "babel-core": "^5.6.15",
@@ -13,5 +13,8 @@
     "nws": "^0.6.1",
     "react": "^0.13.3",
     "webpack": "^1.10.1"
+  },
+  "devDependencies": {
+    "react-hot-loader": "^1.2.8"
   }
 }

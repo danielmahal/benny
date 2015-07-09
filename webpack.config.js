@@ -15,7 +15,8 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/,
-        loader: 'babel?cacheDirectory'
+        loader: 'babel?cacheDirectory',
+        exclude: /node_modules/
       },
 
       {
