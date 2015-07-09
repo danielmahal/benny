@@ -1,144 +1,54 @@
-import React from 'react'
-import {Vector2} from 'three'
+import ParticleMesh from './meshes/ParticleMesh'
+import ParticleDisplayShader from './shaders/ParticleDisplayShader'
+import ParticleSimulationShader from './shaders/ParticleSimulationShader'
+import PingPongTexture from './textures/PingPongTexture'
 
-import Controls from './components/core/Controls'
-import Layer from './components/core/Layer'
+var gl = GL.create()
 
-import ParticleGrid from './ParticleGrid'
-import VectorField from './VectorField'
-import Invert from './components/Invert'
-import Lines from './components/Lines'
+const simulationSize = 512
 
-const mouse = new Vector2()
+const mesh = new ParticleMesh(simulationSize)
 
-class Application extends React.Component {
-  constructor(props) {
-    super(props)
+const displayShader = new ParticleDisplayShader()
+const simulationShader = new ParticleSimulationShader()
 
-    this.state = {
-      mouseDown: false
-    }
+const simulationTexture = new PingPongTexture(gl, simulationSize)
 
-    this.grid = new ParticleGrid({
-      width: window.innerWidth * devicePixelRatio,
-      height: window.innerHeight * devicePixelRatio,
-      size: 60 * devicePixelRatio
-      // ,onUpdate: this.onGridUpdate.bind(this)
+function clear() {
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+}
+
+let init = true
+
+gl.ondraw = function() {
+  // Simulate
+  simulationTexture.drawTo(other => {
+    clear()
+
+    simulationShader.uniforms({
+      sampler: other,
+      mouse: [Math.random(), Math.random()],
+      init: init
     })
 
-    this.vectorField = new VectorField({
-      width: window.innerWidth * devicePixelRatio,
-      height: window.innerHeight * devicePixelRatio,
-      size: 40 * devicePixelRatio
-    })
+    simulationShader.draw(mesh, gl.POINTS)
+  })
 
-    const center = new Vector2(
-      (window.innerWidth / 2) * devicePixelRatio,
-      (window.innerHeight / 2) * devicePixelRatio
-    )
+  // Display
+  clear()
 
-    this.grid.forces = [
-      // Friction
-      particle => {
-        return particle.velocity.clone().multiplyScalar(this.state.mouseDown ? -0.02 : -0.1)
-      },
+  simulationTexture.bind(0)
 
-      // Origin
-      particle => {
-        return particle.origin.clone().sub(particle.position).divideScalar(100)
-      },
+  displayShader.uniforms({
+    positionSampler: 0
+  })
 
-      // Center
-      particle => {
-        return particle.position.clone().sub(center).divideScalar(-2000)
-      },
+  displayShader.draw(mesh, gl.POINTS)
 
-      // Mouse repulsion
-      particle => {
-        const distance = Math.pow(mouse.distanceTo(particle.position) / 100, 6)
-
-        if(this.state.mouseDown) {
-          return particle.position.clone().sub(mouse).divideScalar(distance).multiplyScalar(20)
-        }
-      },
-
-      // Vector field
-      particle => {
-        return this.vectorField.sample(particle.position).vector.divideScalar(-20)
-      }
-    ]
-
-    this.tick = this.tick.bind(this)
-
-    this.requestTick()
-
-    console.log('%d particles in grid', this.grid.particles.length)
-  }
-
-  requestTick() {
-    requestAnimationFrame(this.tick)
-  }
-
-  tick(time) {
-    this.time = time / 1000
-
-    this.grid.update()
-    this.vectorField.noise(1000, time / 5000, time / 5000)
-
-    this.requestTick()
-    this.forceUpdate()
-  }
-
-  onGridUpdate() {
-    this.forceUpdate()
-  }
-
-  onConfigChange(config) {
-    this.setState(config)
-  }
-
-  onMouseDown() {
-    this.setState({
-      mouseDown: true
-    })
-  }
-
-  onMouseUp() {
-    this.setState({
-      mouseDown: false
-    })
-  }
-
-  onMouseMove(e) {
-    mouse.x = e.clientX * devicePixelRatio
-    mouse.y = e.clientY * devicePixelRatio
-  }
-
-  render() {
-    // Vector field
-    const vectorLines = this.vectorField.vectors.map(vector =>
-      [vector.position, vector.position.clone().sub(vector.vector)]
-    )
-
-    // Particles
-    const particleLines = this.grid.particles.map(particle =>
-      [particle.position, particle.previousPosition]
-    )
-
-    return (
-      <div onMouseDown={this.onMouseDown.bind(this)} onMouseUp={this.onMouseUp.bind(this)} onMouseMove={this.onMouseMove.bind(this)}>
-        <Controls value={this.state} onChange={this.onConfigChange.bind(this)} />
-
-        <Layer>
-          <Invert>
-            <Lines key="particleLines" lines={particleLines} lineWidth={5} />
-          </Invert>
-        </Layer>
-      </div>
-    )
-  }
+  init = false
 }
 
 window.addEventListener('load', () => {
-  React.render(<Application />, document.body)
+  gl.fullscreen()
+  gl.animate()
 })

@@ -22,6 +22,11 @@ module.exports = {
       {
         test: /\.html$/,
         loader: 'file?name=[name].html'
+      },
+
+      {
+        test: /libs\/lightgl\.js$/,
+        loader: 'exports?GL'
       }
     ]
   }
