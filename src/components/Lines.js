@@ -5,9 +5,12 @@ import Layer from './core/Layer'
 
 export default class Lines extends Layer {
   draw(context) {
-    context.lineWidth = this.props.lineWidth
+
 
     this.props.lines.forEach(line => {
+      const length = line[0].distanceTo(line[1])
+
+      context.lineWidth = Math.max(this.props.lineWidth - (length / 20), 0.3)
       context.beginPath()
       context.moveTo(line[0].x, line[0].y)
       context.lineTo(line[1].x, line[1].y)

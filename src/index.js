@@ -40,12 +40,12 @@ class Application extends React.Component {
     this.grid.forces = [
       // Friction
       particle => {
-        return particle.velocity.clone().multiplyScalar(this.state.mouseDown ? -0.02 : -0.4)
+        return particle.velocity.clone().multiplyScalar(this.state.mouseDown ? -0.02 : -0.1)
       },
 
       // Origin
       particle => {
-        return particle.origin.clone().sub(particle.position).divideScalar(this.state.mouseDown ? 1 : 100)
+        return particle.origin.clone().sub(particle.position).divideScalar(100)
       },
 
       // Center
@@ -55,25 +55,16 @@ class Application extends React.Component {
 
       // Mouse repulsion
       particle => {
-        const distance = Math.pow(mouse.distanceTo(particle.position), 4)
+        const distance = Math.pow(mouse.distanceTo(particle.position) / 100, 6)
 
         if(this.state.mouseDown) {
-          return particle.position.clone().sub(mouse).divideScalar(distance).multiplyScalar(100)
-        }
-      },
-
-      // Mouse attraction
-      particle => {
-        const distance = Math.pow(mouse.distanceTo(particle.position), 1.6)
-
-        if(this.state.mouseDown) {
-          return particle.position.clone().sub(mouse).divideScalar(distance).multiplyScalar(-100)
+          return particle.position.clone().sub(mouse).divideScalar(distance).multiplyScalar(20)
         }
       },
 
       // Vector field
       particle => {
-        return this.vectorField.sample(particle.position).vector.divideScalar(this.state.mousedown ? -10 : -100)
+        return this.vectorField.sample(particle.position).vector.divideScalar(-20)
       }
     ]
 
@@ -140,8 +131,7 @@ class Application extends React.Component {
 
         <Layer>
           <Invert>
-            <Lines key="vectorLines" lines={vectorLines} lineWidth={0.1} />
-            <Lines key="particleLines" lines={particleLines} lineWidth={2} />
+            <Lines key="particleLines" lines={particleLines} lineWidth={5} />
           </Invert>
         </Layer>
       </div>
