@@ -1,14 +1,4 @@
-const vertex = `
-  varying vec2 coord;
-
-  void main() {
-    coord = gl_Vertex.xy;
-
-    vec4 offset = vec4(-0.5, -0.5, 0.0, -0.5);
-
-    gl_Position = vec4(coord, 0.0, 1.0) + offset;
-  }
-`
+import SimulationShader from './SimulationShader'
 
 const fragment = `
   varying vec2 coord;
@@ -28,5 +18,5 @@ const fragment = `
 `
 
 export default function DropForceShader() {
-  return new GL.Shader(vertex, fragment)
+  return new SimulationShader(fragment)
 }

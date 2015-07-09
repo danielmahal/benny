@@ -25,6 +25,11 @@ module.exports = {
       },
 
       {
+        test: /\.glsl$/,
+        loader: 'raw'
+      },
+
+      {
         test: /libs\/lightgl\.js$/,
         loader: 'exports?GL'
       }

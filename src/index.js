@@ -108,9 +108,11 @@ gl.ondraw = function() {
   clear()
 
   positionTexture.bind(0)
+  velocityTexture.bind(1)
 
   displayShader.uniforms({
-    positionSampler: 0
+    positionSampler: 0,
+    velocitySampler: 1
   })
 
   displayShader.draw(mesh, gl.POINTS)
