@@ -13,8 +13,5 @@
     "nws": "^0.6.1",
     "react": "^0.13.3",
     "webpack": "^1.10.1"
-  },
-  "devDependencies": {
-    "react-hot-loader": "^1.2.8"
   }
 }
