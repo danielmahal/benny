@@ -3,21 +3,19 @@ import SimulationShader from './SimulationShader'
 const fragment = `
   varying vec2 coord;
   uniform sampler2D positionSampler;
-  uniform vec2 dropPosition;
   uniform float strength;
 
   void main() {
+    vec2 center = vec2(0.5, 0.5);
     vec2 position = texture2D(positionSampler, coord).rg;
 
-    float dropDistance = distance(position, dropPosition);
-    vec2 dropDiff = position - dropPosition;
-
-    vec2 force = dropDiff / pow(dropDistance, 2.4) * strength * 0.001;
+    vec2 diff = coord - position;
+    vec2 force = diff * strength;
 
     gl_FragColor = vec4(force, 0, 0);
   }
 `
 
-export default function DropForceShader() {
+export default function CenterForceShader() {
   return new SimulationShader(fragment)
 }

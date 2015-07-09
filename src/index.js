@@ -42,8 +42,18 @@ let init = true
 
 gl.ondraw = function() {
   const forceUniforms = {
+    center: {
+      dropPosition: [0.5, 0.5],
+      strength: 0.01
+    },
+
     drop: {
-      dropPosition: [Math.random(), Math.random()]
+      dropPosition: [Math.random(), Math.random()],
+      strength: Math.random() * 0.02
+    },
+
+    origin: {
+      strength: 0.001
     }
   }
 
@@ -52,10 +62,12 @@ gl.ondraw = function() {
     forceTextures[key].drawTo(() => {
       const shader = forceShaders[key]
 
-      positionTexture.bind(2)
+      positionTexture.bind(1)
+      velocityTexture.bind(2)
 
       shader.uniforms(assign({
-        positionSampler: 2,
+        positionSampler: 1,
+        velocitySampler: 2,
       }, forceUniforms[key]))
 
       shader.draw(mesh, gl.POINTS)

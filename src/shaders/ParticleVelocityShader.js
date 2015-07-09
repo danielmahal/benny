@@ -12,7 +12,7 @@ const fragment = `
     // Inject force uniform
     Object.keys(forces).map(key => {
       return 'uniform sampler2D ' + key + 'ForceSampler;'
-    })
+    }).join('\n')
   }
 
   void main() {
@@ -29,7 +29,7 @@ const fragment = `
         // Apply force
         Object.keys(forces).map(key => {
           return 'velocity += texture2D(' + key + 'ForceSampler, coord).rg;'
-        })
+        }).join('\n')
       }
 
       velocity *= 0.92;
@@ -38,6 +38,8 @@ const fragment = `
     gl_FragColor = vec4(velocity, 0, 0);
   }
 `
+
+console.log(fragment)
 
 export default function ParticleVelocityShader() {
   return new SimulationShader(fragment)
