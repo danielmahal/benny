@@ -1,7 +1,16 @@
+import assign from 'lodash/object/assign'
+import mapValues from 'lodash/object/mapValues'
+
 import ParticleMesh from './meshes/ParticleMesh'
 import ParticleDisplayShader from './shaders/ParticleDisplayShader'
-import ParticleSimulationShader from './shaders/ParticleSimulationShader'
+import ParticlePositionShader from './shaders/ParticlePositionShader'
+import ParticleVelocityShader from './shaders/ParticleVelocityShader'
+import MouseForceShader from './shaders/MouseForceShader'
+
+import SimulationTexture from './textures/PingPongTexture'
 import PingPongTexture from './textures/PingPongTexture'
+
+import forces from './forces'
 
 var gl = GL.create()
 
@@ -9,10 +18,22 @@ const simulationSize = 512
 
 const mesh = new ParticleMesh(simulationSize)
 
+// Shaders
 const displayShader = new ParticleDisplayShader()
-const simulationShader = new ParticleSimulationShader()
+const positionShader = new ParticlePositionShader()
+const velocityShader = new ParticleVelocityShader()
 
-const simulationTexture = new PingPongTexture(gl, simulationSize)
+const forceShaders = mapValues(forces, (force, key) => {
+  return new force.shader()
+})
+
+// Textures
+const positionTexture = new PingPongTexture(gl, simulationSize)
+const velocityTexture = new PingPongTexture(gl, simulationSize)
+
+const forceTextures = mapValues(forces, (force, key) => {
+  return new SimulationTexture(gl, simulationSize)
+})
 
 function clear() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -21,23 +42,65 @@ function clear() {
 let init = true
 
 gl.ondraw = function() {
+  const forceUniforms = {
+    mouse: {
+      mouse: [Math.random(), Math.random()]
+    }
+  }
+
   // Simulate
-  simulationTexture.drawTo(other => {
+  Object.keys(forces).forEach(key => {
+    forceTextures[key].drawTo(() => {
+      const shader = forceShaders[key]
+
+      positionTexture.bind(2)
+
+      shader.uniforms(assign({
+        positionSampler: 2,
+      }, forceUniforms[key]))
+
+      shader.draw(mesh, gl.POINTS)
+    })
+  })
+
+  // Velocity simulation
+  velocityTexture.drawTo(alternate => {
     clear()
 
-    simulationShader.uniforms({
-      sampler: other,
-      mouse: [Math.random(), Math.random()],
+    alternate.bind(1)
+    positionTexture.bind(2)
+    forceTextures['mouse'].bind(3)
+
+    velocityShader.uniforms({
+      velocitySampler: 1,
+      positionSampler: 2,
+      mouseForceSampler: 3,
       init: init
     })
 
-    simulationShader.draw(mesh, gl.POINTS)
+    velocityShader.draw(mesh, gl.POINTS)
+  })
+
+  // Position simulation
+  positionTexture.drawTo(alternate => {
+    clear()
+
+    alternate.bind(1)
+    velocityTexture.bind(2)
+
+    positionShader.uniforms({
+      positionSampler: 1,
+      velocitySampler: 2,
+      init: init
+    })
+
+    positionShader.draw(mesh, gl.POINTS)
   })
 
   // Display
   clear()
 
-  simulationTexture.bind(0)
+  positionTexture.bind(0)
 
   displayShader.uniforms({
     positionSampler: 0

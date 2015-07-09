@@ -20,7 +20,7 @@ PingPongTexture.prototype.drawTo = function(drawTo) {
   this.textureB.bind(1)
 
   this.textureA.drawTo(() => {
-    drawTo(1)
+    drawTo(this.textureB)
   })
 
   this.textureB.unbind()
