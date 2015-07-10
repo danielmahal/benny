@@ -1,3 +1,5 @@
+import lightgl from '../../libs/lightgl'
+
 const vertex = `
   uniform sampler2D positionSampler;
   uniform sampler2D velocitySampler;
@@ -26,5 +28,5 @@ const fragment = `
 `
 
 export default function ParticleDisplayShader() {
-  return new GL.Shader(vertex, fragment)
+  return new lightgl.Shader(vertex, fragment)
 }

@@ -1,3 +1,5 @@
+import lightgl from '../libs/lightgl'
+
 import assign from 'lodash/object/assign'
 import mapValues from 'lodash/object/mapValues'
 
@@ -11,7 +13,7 @@ import PingPongTexture from './textures/PingPongTexture'
 
 import forces from './forces'
 
-var gl = GL.create()
+var gl = lightgl.create()
 
 const simulationSize = 512
 
@@ -41,28 +43,44 @@ function clear() {
 let time = 0
 let init = true
 
+let mouse = [0.5, 0.5]
+let mousedown = false
+
+window.addEventListener('mousemove', e => {
+  mouse[0] = e.clientX / window.innerWidth
+  mouse[1] = 1-(e.clientY / window.innerHeight)
+})
+
+window.addEventListener('mousedown', e => {
+  mousedown = true
+})
+
+window.addEventListener('mouseup', e => {
+  mousedown = false
+})
+
 gl.ondraw = function() {
   time += 0.1
 
   const forceUniforms = {
     center: {
-      dropPosition: [0.5, 0.5],
-      strength: (Math.sin(time * 0.2) + 2) * 0.005
+      dropPosition: mouse,
+      strength: (Math.sin(time * 0.2) + 2) * 0.0005
     },
 
     drop: {
       dropPosition: [Math.random(), Math.random()],
-      strength: Math.random() * 0.01
+      strength: Math.random() * 0.002
     },
 
     origin: {
-      strength: 0.001
+      strength: mousedown ? 0.01 : 0.000
     },
 
     noise: {
       size: 6,
-      strength: 0.1,
-      time: time
+      strength: 0.05,
+      time: time * 2
     }
   }
 
