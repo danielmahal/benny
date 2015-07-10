@@ -39,8 +39,6 @@ const fragment = `
   }
 `
 
-console.log(fragment)
-
 export default function ParticleVelocityShader() {
   return new SimulationShader(fragment)
 }
