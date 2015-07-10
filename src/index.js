@@ -38,22 +38,31 @@ function clear() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
+let time = 0
 let init = true
 
 gl.ondraw = function() {
+  time += 0.1
+
   const forceUniforms = {
     center: {
       dropPosition: [0.5, 0.5],
-      strength: 0.01
+      strength: (Math.sin(time * 0.2) + 2) * 0.005
     },
 
     drop: {
       dropPosition: [Math.random(), Math.random()],
-      strength: Math.random() * 0.02
+      strength: Math.random() * 0.01
     },
 
     origin: {
       strength: 0.001
+    },
+
+    noise: {
+      size: 6,
+      strength: 0.1,
+      time: time
     }
   }
 
