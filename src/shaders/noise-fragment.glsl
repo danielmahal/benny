@@ -60,15 +60,23 @@ float simplex3d_fractal(vec3 m) {
 }
 
 void main() {
-	vec3 p = vec3(coord, time * 0.025);
+	vec3 px = vec3(coord, time);
+	vec3 py = vec3(coord, time + 3.14 * 2.0);
 
 	float value;
 
   float s = 10.0 - size;
 
-	value = simplex3d_fractal(p * s + s);
+	float valuex = simplex3d_fractal(px * s + s);
+	float valuey = simplex3d_fractal(py * s + s);
 
-	value = value * 0.001 * strength;
+	float lightness = 0.0;
+	float contrast = 0.01 * strength;
 
-	gl_FragColor = vec4(vec3(value), 1.0);
+	// value = value;
+
+	float x = lightness + contrast * valuex;
+	float y = lightness + contrast * valuey;
+
+	gl_FragColor = vec4(x, y, 0.0, 1.0);
 }

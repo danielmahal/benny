@@ -1,5 +1,8 @@
+var debug = process.env.NODE_ENV !== 'production'
+var devtool = debug && 'eval'
+
 module.exports = {
-  devtool: 'source-map',
+  devtool: devtool,
 
   entry: [
     __dirname + '/src/index.html',

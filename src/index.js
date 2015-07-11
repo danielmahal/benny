@@ -4,9 +4,12 @@ import assign from 'lodash/object/assign'
 import mapValues from 'lodash/object/mapValues'
 
 import ParticleMesh from './meshes/ParticleMesh'
+import DebugMesh from './meshes/DebugMesh'
+
 import ParticleDisplayShader from './shaders/ParticleDisplayShader'
 import ParticlePositionShader from './shaders/ParticlePositionShader'
 import ParticleVelocityShader from './shaders/ParticleVelocityShader'
+import DebugShader from './shaders/SimulationDebugShader'
 
 import SimulationTexture from './textures/PingPongTexture'
 import PingPongTexture from './textures/PingPongTexture'
@@ -17,12 +20,14 @@ var gl = lightgl.create()
 
 const simulationSize = 512
 
-const mesh = new ParticleMesh(simulationSize)
+const particleMesh = new ParticleMesh(simulationSize)
+const debugMesh = new DebugMesh()
 
 // Shaders
 const displayShader = new ParticleDisplayShader()
 const positionShader = new ParticlePositionShader()
 const velocityShader = new ParticleVelocityShader()
+const debugShader = new DebugShader()
 
 const forceShaders = mapValues(forces, (force, key) => {
   return new force.shader()
@@ -74,13 +79,13 @@ gl.ondraw = function() {
     },
 
     origin: {
-      strength: mousedown ? 0.01 : 0.000
+      strength: mousedown ? 0.01 : 0.0001
     },
 
     noise: {
       size: 6,
-      strength: 0.05,
-      time: time * 2
+      strength: 0.003,
+      time: time / 100
     }
   }
 
@@ -97,7 +102,7 @@ gl.ondraw = function() {
         velocitySampler: 2,
       }, forceUniforms[key]))
 
-      shader.draw(mesh, gl.POINTS)
+      shader.draw(particleMesh, gl.POINTS)
     })
   })
 
@@ -124,7 +129,7 @@ gl.ondraw = function() {
       init: init
     }, forceUniforms))
 
-    velocityShader.draw(mesh, gl.POINTS)
+    velocityShader.draw(particleMesh, gl.POINTS)
   })
 
   // Position simulation
@@ -140,7 +145,7 @@ gl.ondraw = function() {
       init: init
     })
 
-    positionShader.draw(mesh, gl.POINTS)
+    positionShader.draw(particleMesh, gl.POINTS)
   })
 
   // Display
@@ -154,7 +159,7 @@ gl.ondraw = function() {
     velocitySampler: 1
   })
 
-  displayShader.draw(mesh, gl.POINTS)
+  displayShader.draw(particleMesh, gl.POINTS)
 
   init = false
 }
