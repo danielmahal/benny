@@ -12,7 +12,7 @@ const vertex = `
     position = texture2D(positionSampler, gl_Vertex.xy).rg;
     velocity = texture2D(velocitySampler, gl_Vertex.xy).rg;
 
-    gl_PointSize = 1.0;
+    gl_PointSize = 2.0;
     gl_Position = vec4(position, 0.0, 1.0) + offset;
   }
 `
@@ -21,7 +21,7 @@ const fragment = `
   varying vec2 velocity;
 
   void main() {
-    float speed = length(velocity) * 500.0 + 0.2;
+    float speed = length(velocity) * 1000.0 + 0.4;
 
     gl_FragColor = vec4(speed, speed, speed, 1.0);
   }

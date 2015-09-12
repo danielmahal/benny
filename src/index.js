@@ -18,7 +18,7 @@ import forces from './forces'
 
 var gl = lightgl.create()
 
-const simulationSize = 512
+const simulationSize = 256
 
 const particleMesh = new ParticleMesh(simulationSize)
 const debugMesh = new DebugMesh()
@@ -75,11 +75,11 @@ gl.ondraw = function() {
 
     drop: {
       dropPosition: [Math.random(), Math.random()],
-      strength: Math.random() * 0.002
+      strength: Math.pow(Math.random() * 0.6, 10)
     },
 
     origin: {
-      strength: mousedown ? 0.01 : 0.0001
+      strength: mousedown ? 0.05 : 0.0001
     },
 
     noise: {
