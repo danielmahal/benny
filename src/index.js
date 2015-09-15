@@ -14,6 +14,8 @@ import DebugShader from './shaders/SimulationDebugShader'
 import SimulationTexture from './textures/PingPongTexture'
 import PingPongTexture from './textures/PingPongTexture'
 
+import midi from './midi'
+
 import forces from './forces'
 
 var gl = lightgl.create()
@@ -68,23 +70,23 @@ gl.ondraw = function() {
   time += 0.1
 
   const forceUniforms = {
-    center: {
-      dropPosition: mouse,
-      strength: (Math.sin(time * 0.2) + 2) * 0.0005
-    },
+    // center: {
+    //   dropPosition: mouse,
+    //   strength: (Math.sin(time * 0.2) + 2) * 0.0005
+    // },
 
     drop: {
       dropPosition: [Math.random(), Math.random()],
-      strength: Math.pow(Math.random() * 0.6, 10)
+      strength: ((midi.knob[0] || 0.5) - 0.5) * (midi.knob[5] || 0)
     },
-
+    //
     origin: {
-      strength: mousedown ? 0.05 : 0.0001
+      strength: (midi.knob[1] || 0) * 0.1
     },
-
+    //
     noise: {
       size: 6,
-      strength: 0.003,
+      strength: (midi.knob[2] || 0) * 0.03,
       time: time / 100
     }
   }
