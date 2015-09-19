@@ -3,7 +3,7 @@ import lightgl from '../../libs/lightgl'
 
 export default function ParticleMesh(size) {
   var mesh = new lightgl.Mesh({
-    coords: true,
+    coords: false,
     triangles: false
   })
 
@@ -11,7 +11,8 @@ export default function ParticleMesh(size) {
     times(size, y => {
       mesh.vertices.push([
         x / size,
-        y / size
+        y / size,
+        0
       ])
     })
   })

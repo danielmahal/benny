@@ -3,22 +3,20 @@ import lightgl from '../../libs/lightgl'
 const vertex = `
   uniform sampler2D positionSampler;
   uniform sampler2D velocitySampler;
-  varying vec2 position;
-  varying vec2 velocity;
+  varying vec3 position;
+  varying vec3 velocity;
 
   void main() {
-    vec4 offset = vec4(-0.5, -0.5, 0.0, -0.5);
+    position = texture2D(positionSampler, gl_Vertex.xy).rgb;
+    velocity = texture2D(velocitySampler, gl_Vertex.xy).rgb;
 
-    position = texture2D(positionSampler, gl_Vertex.xy).rg;
-    velocity = texture2D(velocitySampler, gl_Vertex.xy).rg;
-
-    gl_PointSize = 2.0;
-    gl_Position = vec4(position, 0.0, 1.0) + offset;
+    gl_PointSize = 1.0;
+    gl_Position = gl_ModelViewProjectionMatrix * vec4(position.xyz, 1.0);
   }
 `
 
 const fragment = `
-  varying vec2 velocity;
+  varying vec3 velocity;
 
   void main() {
     float speed = length(velocity) * 800.0 + 0.1;

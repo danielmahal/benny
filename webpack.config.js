@@ -33,6 +33,11 @@ module.exports = {
       },
 
       {
+        test: /\.json$/,
+        loader: 'json'
+      },
+
+      {
         test: /libs\/lightgl\.js$/,
         loader: 'exports?GL'
       }

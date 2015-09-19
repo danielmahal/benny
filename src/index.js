@@ -3,9 +3,11 @@ import lightgl from '../libs/lightgl'
 import assign from 'lodash/object/assign'
 import mapValues from 'lodash/object/mapValues'
 
+import BirdMesh from './meshes/BirdMesh'
 import ParticleMesh from './meshes/ParticleMesh'
 import DebugMesh from './meshes/DebugMesh'
 
+import GeometryShader from './shaders/GeometryShader'
 import ParticleDisplayShader from './shaders/ParticleDisplayShader'
 import ParticlePositionShader from './shaders/ParticlePositionShader'
 import ParticleVelocityShader from './shaders/ParticleVelocityShader'
@@ -22,13 +24,26 @@ var gl = lightgl.create()
 
 const simulationSize = 256
 
+const cubeMesh = new lightgl.Mesh.cube().computeWireframe()
+const birdMesh = new BirdMesh(simulationSize)
 const particleMesh = new ParticleMesh(simulationSize)
 const debugMesh = new DebugMesh()
 
 // Shaders
+const cubeShader = new lightgl.Shader('\
+  void main() {\
+    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+  }\
+', '\
+  void main() {\
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\
+  }\
+');
+
 const displayShader = new ParticleDisplayShader()
 const positionShader = new ParticlePositionShader()
 const velocityShader = new ParticleVelocityShader()
+const geometryShader = new GeometryShader()
 const debugShader = new DebugShader()
 
 const forceShaders = mapValues(forces, (force, key) => {
@@ -36,6 +51,7 @@ const forceShaders = mapValues(forces, (force, key) => {
 })
 
 // Textures
+const birdTexture = new SimulationTexture(gl, simulationSize)
 const positionTexture = new PingPongTexture(gl, simulationSize)
 const velocityTexture = new PingPongTexture(gl, simulationSize)
 
@@ -66,8 +82,24 @@ window.addEventListener('mouseup', e => {
   mousedown = false
 })
 
-gl.ondraw = function() {
+let setup = true;
+
+gl.onupdate = function() {
   time += 0.1
+}
+
+gl.ondraw = function() {
+  gl.loadIdentity();
+  gl.translate(0, 0, -2);
+  gl.rotate(time * 5, 0, -1, 0);
+
+  if(setup) {
+    setup = false;
+
+    birdTexture.drawTo(() => {
+      geometryShader.draw(birdMesh, gl.POINTS)
+    })
+  }
 
   const forceUniforms = {
     // center: {
@@ -76,17 +108,16 @@ gl.ondraw = function() {
     // },
 
     drop: {
-      dropPosition: [Math.random(), Math.random()],
+      dropPosition: [Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5],
       strength: ((midi.knob[0] || 0.5) - 0.5) * (midi.knob[5] || 0)
     },
-    //
+
     origin: {
       strength: (midi.knob[1] || 0) * 0.1
     },
-    //
+
     noise: {
       size: 6,
-      strength: (midi.knob[2] || 0) * 0.03,
       time: time / 100
     }
   }
@@ -98,10 +129,12 @@ gl.ondraw = function() {
 
       positionTexture.bind(1)
       velocityTexture.bind(2)
+      birdTexture.bind(3)
 
       shader.uniforms(assign({
         positionSampler: 1,
         velocitySampler: 2,
+        originSampler: 3,
       }, forceUniforms[key]))
 
       shader.draw(particleMesh, gl.POINTS)
@@ -140,10 +173,12 @@ gl.ondraw = function() {
 
     alternate.bind(1)
     velocityTexture.bind(2)
+    birdTexture.bind(3)
 
     positionShader.uniforms({
       positionSampler: 1,
       velocitySampler: 2,
+      originSampler: 3,
       init: init
     })
 
@@ -163,10 +198,16 @@ gl.ondraw = function() {
 
   displayShader.draw(particleMesh, gl.POINTS)
 
+  // cubeShader.draw(cubeMesh, gl.LINES)
+
+  birdTexture.bind(0)
+
   init = false
 }
 
 window.addEventListener('load', () => {
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
   gl.fullscreen()
   gl.animate()
 })
