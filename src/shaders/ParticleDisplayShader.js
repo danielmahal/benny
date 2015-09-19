@@ -19,7 +19,7 @@ const fragment = `
   varying vec3 velocity;
 
   void main() {
-    float speed = length(velocity) * 800.0 + 0.1;
+    float speed = length(velocity) * 800.0 + 0.4;
 
     gl_FragColor = vec4(speed, speed, speed, 1.0);
   }
