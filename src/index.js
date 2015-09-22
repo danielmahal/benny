@@ -1,11 +1,10 @@
 import lightgl from '../libs/lightgl'
+import {assign, map, mapValues, times} from 'lodash';
 
-import assign from 'lodash/object/assign'
-import mapValues from 'lodash/object/mapValues'
-
-import BirdMesh from './meshes/BirdMesh'
 import ParticleMesh from './meshes/ParticleMesh'
 import DebugMesh from './meshes/DebugMesh'
+import GeometryMesh from './meshes/GeometryMesh'
+import GeometryMeshSequence from './meshes/GeometryMeshSequence'
 
 import GeometryShader from './shaders/GeometryShader'
 import ParticleDisplayShader from './shaders/ParticleDisplayShader'
@@ -24,8 +23,12 @@ var gl = lightgl.create()
 
 const simulationSize = 256
 
+const originMeshes = [
+  new GeometryMesh('birdTest01'),
+  new GeometryMesh('move_text_01')
+];
+
 const cubeMesh = new lightgl.Mesh.cube().computeWireframe()
-const birdMesh = new BirdMesh(simulationSize)
 const particleMesh = new ParticleMesh(simulationSize)
 const debugMesh = new DebugMesh()
 
@@ -51,6 +54,10 @@ const forceShaders = mapValues(forces, (force, key) => {
 })
 
 // Textures
+const originTextures = map(originMeshes, () => {
+  return new SimulationTexture(gl, simulationSize);
+})
+
 const birdTexture = new SimulationTexture(gl, simulationSize)
 const positionTexture = new PingPongTexture(gl, simulationSize)
 const velocityTexture = new PingPongTexture(gl, simulationSize)
@@ -65,9 +72,12 @@ function clear() {
 
 let time = 0
 let init = true
+let currentOrigin = 0;
 
 let mouse = [0.5, 0.5]
 let mousedown = false
+let rotation = 0;
+let rotationSpeed = 0;
 
 window.addEventListener('mousemove', e => {
   mouse[0] = e.clientX / window.innerWidth
@@ -85,51 +95,56 @@ window.addEventListener('mouseup', e => {
 let setup = true;
 
 gl.onupdate = function() {
-  time += 0.1
+  time++;
+
+  times(4, i => {
+    // Midi pad 5-8
+    if(midi.pad[i + 4]) {
+      currentOrigin = i;
+    }
+  })
 }
 
 gl.ondraw = function() {
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
   gl.loadIdentity();
-  gl.translate(0, 0, -2);
-  gl.rotate(time * 5, 0, -1, 0);
+  gl.translate(0, 0, -(midi.knob[6] || 0.5) * 4);
+  gl.rotate((midi.knob[4] || 0.25) * 360, 0, -1, 0);
 
-  if(setup) {
-    setup = false;
+  originTextures.forEach((texture, i) => texture.drawTo(() => {
+    const mesh = originMeshes[i];
 
-    birdTexture.drawTo(() => {
-      geometryShader.draw(birdMesh, gl.POINTS)
-    })
-  }
+    if(mesh.changed) {
+      geometryShader.draw(mesh, gl.POINTS);
+    }
+  }))
 
   const forceUniforms = {
-    // center: {
-    //   dropPosition: mouse,
-    //   strength: (Math.sin(time * 0.2) + 2) * 0.0005
-    // },
-
     drop: {
       dropPosition: [Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5],
-      strength: ((midi.knob[0] || 0.5) - 0.5) * (midi.knob[5] || 0)
+      strength: Math.pow(((midi.knob[0] || 0.5) - 0.5) * 4, 3)// * (midi.knob[4] || 0)
     },
 
     origin: {
-      strength: Math.pow(midi.knob[1] || 0, 2) * 0.1
+      strength: Math.pow(midi.knob[1] || 0, 2) * 0.2
     },
 
     noise: {
-      size: 6,
+      size: (midi.knob[3] || 4) * 100 + 2,
+      strength: (midi.knob[2] || 0) * 0.03,
       time: time / 100
     }
   }
 
-  // Simulate
+  // Forces simulation
   Object.keys(forces).forEach(key => {
     forceTextures[key].drawTo(() => {
       const shader = forceShaders[key]
 
       positionTexture.bind(1)
       velocityTexture.bind(2)
-      birdTexture.bind(3)
+      originTextures[currentOrigin].bind(3)
 
       shader.uniforms(assign({
         positionSampler: 1,
@@ -160,8 +175,7 @@ gl.ondraw = function() {
     velocityShader.uniforms(assign({
       velocitySampler: 1,
       positionSampler: 2,
-      mouseForceSampler: 3,
-      init: init
+      reset: (midi.pad[2] ? true : false),
     }, forceUniforms))
 
     velocityShader.draw(particleMesh, gl.POINTS)
@@ -173,13 +187,15 @@ gl.ondraw = function() {
 
     alternate.bind(1)
     velocityTexture.bind(2)
-    birdTexture.bind(3)
+    originTextures[currentOrigin].bind(3)
 
     positionShader.uniforms({
       positionSampler: 1,
       velocitySampler: 2,
       originSampler: 3,
-      init: init
+      init: init,
+      direction: (midi.pad[0] ? -1 : 1),
+      reset: (midi.pad[2] ? true : false)
     })
 
     positionShader.draw(particleMesh, gl.POINTS)
@@ -191,14 +207,17 @@ gl.ondraw = function() {
   positionTexture.bind(0)
   velocityTexture.bind(1)
 
+  if(midi.pad[1]) {
+    originTextures[currentOrigin].bind(0)
+  }
+
   displayShader.uniforms({
     positionSampler: 0,
-    velocitySampler: 1
+    velocitySampler: 1,
+    brightness: (midi.knob[7] || 0.4)
   })
 
   displayShader.draw(particleMesh, gl.POINTS)
-
-  // cubeShader.draw(cubeMesh, gl.LINES)
 
   birdTexture.bind(0)
 
@@ -206,6 +225,8 @@ gl.ondraw = function() {
 }
 
 window.addEventListener('load', () => {
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_PLUS_SRC_ALPHA);
+  gl.disable(gl.DEPTH_TEST)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   gl.fullscreen()

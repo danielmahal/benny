@@ -10,16 +10,17 @@ const vertex = `
     position = texture2D(positionSampler, gl_Vertex.xy).rgb;
     velocity = texture2D(velocitySampler, gl_Vertex.xy).rgb;
 
-    gl_PointSize = 1.0;
+    gl_PointSize = 2.0;
     gl_Position = gl_ModelViewProjectionMatrix * vec4(position.xyz, 1.0);
   }
 `
 
 const fragment = `
+  uniform float brightness;
   varying vec3 velocity;
 
   void main() {
-    float speed = length(velocity) * 800.0 + 0.4;
+    float speed = length(velocity) * 100.0 + brightness;
 
     gl_FragColor = vec4(speed, speed, speed, 1.0);
   }
