@@ -5,7 +5,9 @@ const geometryContext = require.context('../geometry');
 const parseContext = require.context('../utils');
 
 function loadGeometry(name, callback) {
-  !isString(name) && callback(name)
+  if(!isString(name)) {
+    return callback(name)
+  }
 
   fetch(geometryContext(`./${name}.json`)).then(data => {
     return data.json();

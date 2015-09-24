@@ -28,6 +28,10 @@ const originMeshes = [
   new GeometryMesh('move_text_01')
 ];
 
+const originMeshSequences = [
+  new GeometryMeshSequence('birdAnim', 170, 20),
+]
+
 const cubeMesh = new lightgl.Mesh.cube().computeWireframe()
 const particleMesh = new ParticleMesh(simulationSize)
 const debugMesh = new DebugMesh()
@@ -54,8 +58,10 @@ const forceShaders = mapValues(forces, (force, key) => {
 })
 
 // Textures
-const originTextures = map(originMeshes, () => {
-  return new SimulationTexture(gl, simulationSize);
+const originTextures = map(originMeshes, () => new SimulationTexture(gl, simulationSize));
+
+const originSequenceTextures = map(originMeshSequences, sequence => {
+  return sequence.frames.map(() => new SimulationTexture(gl, simulationSize))
 })
 
 const birdTexture = new SimulationTexture(gl, simulationSize)
@@ -112,13 +118,37 @@ gl.ondraw = function() {
   gl.translate(0, 0, -(midi.knob[6] || 0.5) * 4);
   gl.rotate((midi.knob[4] || 0.25) * 360, 0, -1, 0);
 
-  originTextures.forEach((texture, i) => texture.drawTo(() => {
+  originTextures.forEach((texture, i) => {
     const mesh = originMeshes[i];
 
     if(mesh.changed) {
-      geometryShader.draw(mesh, gl.POINTS);
+      mesh.changed = false;
+
+      texture.drawTo(() => {
+        geometryShader.draw(mesh, gl.POINTS);
+      })
     }
-  }))
+  })
+
+  originSequenceTextures.forEach((textures, sequenceIndex) => {
+    const sequence = originMeshSequences[sequenceIndex];
+
+    if(sequence.changed) {
+      sequence.changed = false;
+
+      textures.forEach((texture, textureIndex) => {
+        const mesh = sequence.frames[textureIndex];
+
+        texture.drawTo(() => {
+          geometryShader.draw(mesh, gl.POINTS)
+        })
+      })
+    }
+  })
+
+  const currentOriginSequence = originMeshSequences[currentOrigin];
+  const currentOriginTexture = originSequenceTextures[currentOrigin][time % currentOriginSequence.frames.length];
+  // const currentOriginTexture = originTextures[currentOrigin];
 
   const forceUniforms = {
     drop: {
@@ -144,7 +174,7 @@ gl.ondraw = function() {
 
       positionTexture.bind(1)
       velocityTexture.bind(2)
-      originTextures[currentOrigin].bind(3)
+      currentOriginTexture.bind(3)
 
       shader.uniforms(assign({
         positionSampler: 1,
@@ -187,7 +217,7 @@ gl.ondraw = function() {
 
     alternate.bind(1)
     velocityTexture.bind(2)
-    originTextures[currentOrigin].bind(3)
+    currentOriginTexture.bind(3)
 
     positionShader.uniforms({
       positionSampler: 1,
@@ -208,7 +238,7 @@ gl.ondraw = function() {
   velocityTexture.bind(1)
 
   if(midi.pad[1]) {
-    originTextures[currentOrigin].bind(0)
+    currentOriginTexture.bind(0)
   }
 
   displayShader.uniforms({
