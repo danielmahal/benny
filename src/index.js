@@ -29,7 +29,11 @@ const originMeshes = [
 ];
 
 const originMeshSequences = [
-  new GeometryMeshSequence('birdAnim', 170, 20),
+  new GeometryMeshSequence('plane', 3, 1),
+  new GeometryMeshSequence('sphere', 1, 1),
+  new GeometryMeshSequence('move', 1, 1),
+  new GeometryMeshSequence('spiral', 2, 1),
+  // new GeometryMeshSequence('bird', 170, 20),
 ]
 
 const cubeMesh = new lightgl.Mesh.cube().computeWireframe()
@@ -152,8 +156,8 @@ gl.ondraw = function() {
 
   const forceUniforms = {
     drop: {
-      dropPosition: [Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5],
-      strength: Math.pow(((midi.knob[0] || 0.5) - 0.5) * 4, 3)// * (midi.knob[4] || 0)
+      dropPosition: [Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 3 - 1.5],
+      strength: Math.pow(((midi.knob[0] || 0.5) - 0.5) * 3, 5)
     },
 
     origin: {
@@ -161,11 +165,15 @@ gl.ondraw = function() {
     },
 
     noise: {
-      size: (midi.knob[3] || 4) * 100 + 2,
-      strength: (midi.knob[2] || 0) * 0.03,
-      time: time / 100
+      size: 1,
+      strength: 0,//0.05,
+      time: time / 1000
     }
   }
+
+  // size: 6,
+  // strength: 0.003,
+  // time: time / 100
 
   // Forces simulation
   Object.keys(forces).forEach(key => {

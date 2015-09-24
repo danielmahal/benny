@@ -65,7 +65,7 @@ void main() {
 
 	float value;
 
-  float s = 10.0 - size;
+  float s = 1.0;
 
 	float valuex = simplex3d_fractal(px * s + s);
 	float valuey = simplex3d_fractal(py * s + s);
@@ -78,5 +78,5 @@ void main() {
 	float x = lightness + contrast * valuex;
 	float y = lightness + contrast * valuey;
 
-	gl_FragColor = vec4(x, y, 0.0, 1.0);
+	gl_FragColor = vec4(0.0, y, x, 1.0);
 }
