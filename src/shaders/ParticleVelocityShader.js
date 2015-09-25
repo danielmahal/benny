@@ -5,28 +5,27 @@ const fragment = `
   varying vec2 coord;
   uniform sampler2D positionSampler;
   uniform sampler2D velocitySampler;
+  uniform sampler2D targetSampler;
+  uniform sampler2D dropForceSampler;
+  uniform sampler2D noiseForceSampler;
+  uniform float targetStrength;
   uniform bool reset;
-
-  ${
-    // Inject force uniforms
-    Object.keys(forces).map(key => {
-      return 'uniform sampler2D ' + key + 'ForceSampler;'
-    }).join('\n')
-  }
 
   void main() {
     vec3 velocity = texture2D(velocitySampler, coord).rgb;
     vec3 position = texture2D(positionSampler, coord).rgb;
+    vec3 target = texture2D(targetSampler, coord).rgb;
 
     if(reset) {
       velocity *= 0.0;
     } else {
-      ${
-        // Apply force
-        Object.keys(forces).map(key => {
-          return 'velocity += texture2D(' + key + 'ForceSampler, coord).rgb;'
-        }).join('\n')
-      }
+      velocity += texture2D(dropForceSampler, coord).rgb;
+      velocity += texture2D(noiseForceSampler, (position.yz / 3.0) + 0.5).rgb;
+
+      vec3 targetDiff = target - position;
+      vec3 force = targetDiff * targetStrength;
+
+      velocity += force;
 
       velocity *= 0.92;
     }

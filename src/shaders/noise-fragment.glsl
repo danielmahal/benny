@@ -65,7 +65,7 @@ void main() {
 
 	float value;
 
-  float s = 1.0;
+  float s = size;
 
 	float valuex = simplex3d_fractal(px * s + s);
 	float valuey = simplex3d_fractal(py * s + s);

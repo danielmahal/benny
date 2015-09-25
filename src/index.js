@@ -72,9 +72,10 @@ const birdTexture = new SimulationTexture(gl, simulationSize)
 const positionTexture = new PingPongTexture(gl, simulationSize)
 const velocityTexture = new PingPongTexture(gl, simulationSize)
 
-const forceTextures = mapValues(forces, (force, key) => {
-  return new SimulationTexture(gl, simulationSize)
-})
+const forceTextures = {
+  drop: new SimulationTexture(gl, simulationSize),
+  noise: new SimulationTexture(gl, simulationSize),
+}
 
 function clear() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -161,19 +162,17 @@ gl.ondraw = function() {
     },
 
     origin: {
-      strength: Math.pow(midi.knob[1] || 0, 2) * 0.2
+      strength: Math.pow(midi.knob[1] || 0, 2) * 0.2,
     },
 
     noise: {
-      size: 1,
-      strength: 0,//0.05,
+      size: 20 - (midi.knob[3] || 19.9) * 19.9,
+      strength: (midi.knob[2] || 0) * 0.5,
       time: time / 1000
     }
   }
 
-  // size: 6,
-  // strength: 0.003,
-  // time: time / 100
+
 
   // Forces simulation
   Object.keys(forces).forEach(key => {
@@ -200,21 +199,22 @@ gl.ondraw = function() {
 
     alternate.bind(1)
     positionTexture.bind(2)
+    currentOriginTexture.bind(3)
 
-    const forceUniforms = {}
+    const velocityForceUniforms = {}
 
-    Object.keys(forces).forEach((key, i) => {
-      const textureIndex = 3 + i
+    forceTextures.drop.bind(4);
+    forceTextures.noise.bind(5);
 
-      forceUniforms[key + 'ForceSampler'] = textureIndex
-      forceTextures[key].bind(textureIndex)
-    })
-
-    velocityShader.uniforms(assign({
+    velocityShader.uniforms({
       velocitySampler: 1,
       positionSampler: 2,
+      targetSampler: 3,
+      dropForceSampler: 4,
+      noiseForceSampler: 5,
+      targetStrength: forceUniforms.origin.strength,
       reset: (midi.pad[2] ? true : false),
-    }, forceUniforms))
+    })
 
     velocityShader.draw(particleMesh, gl.POINTS)
   })
