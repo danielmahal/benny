@@ -32,8 +32,8 @@ const originMeshSequences = [
   new GeometryMeshSequence('plane', 3, 1),
   new GeometryMeshSequence('sphere', 1, 1),
   new GeometryMeshSequence('move', 1, 1),
-  new GeometryMeshSequence('spiral', 2, 1),
-  // new GeometryMeshSequence('bird', 170, 20),
+  // new GeometryMeshSequence('spiral', 2, 1),
+  new GeometryMeshSequence('bird', 170, 20),
 ]
 
 const cubeMesh = new lightgl.Mesh.cube().computeWireframe()
