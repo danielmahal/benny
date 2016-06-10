@@ -5,7 +5,7 @@
     "start": "./node_modules/.bin/nws -d build -p 4000 & ./node_modules/.bin/webpack --watch --progress --colors",
     "clean": "rm -rf build",
     "build": "npm run clean && NODE_ENV=production ./node_modules/.bin/webpack --production",
-    "deploy": "npm run build && surge --project ./build --domain benny-viz.surge.sh"
+    "deploy": "npm run build && surge --project ./build --domain benny.surge.sh"
   },
   "dependencies": {
     "babel-core": "^5.6.15",
