@@ -18,8 +18,11 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/,
-        loader: 'babel?cacheDirectory',
-        include: /src\//
+        loader: 'babel',
+        exclude: /(libs|node_modules)/,
+        query: {
+          presets: ['es2015', 'stage-0']
+        }
       },
 
       {
