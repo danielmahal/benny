@@ -38,11 +38,14 @@ const midi = new Midi({
 })
 
 const originMeshSequences = [
-  new GeometryMeshSequence('plane', 3, 1),
-  new GeometryMeshSequence('sphere', 1, 1),
-  // new GeometryMeshSequence('move', 1, 1),
-  new GeometryMeshSequence('spiral', 2, 1),
-  new GeometryMeshSequence('bird', 170, 20)
+  new GeometryMeshSequence('plakat_low', 1, 1),
+  new GeometryMeshSequence('oslo', 1, 1),
+  new GeometryMeshSequence('tree_high', 1, 1),
+  new GeometryMeshSequence('sphere', 1, 1)
+  // new GeometryMeshSequence('sphere', 1, 1),
+  // // new GeometryMeshSequence('move', 1, 1),
+  // new GeometryMeshSequence('spiral', 2, 1),
+  // new GeometryMeshSequence('bird', 170, 20)
 ]
 
 const particleMesh = new ParticleMesh(simulationSize)
