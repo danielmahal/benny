@@ -10,7 +10,7 @@ import ParticleDisplayShader from './shaders/ParticleDisplayShader'
 import ParticlePositionShader from './shaders/ParticlePositionShader'
 import ParticleVelocityShader from './shaders/ParticleVelocityShader'
 
-import SimulationTexture from './textures/PingPongTexture'
+import SimulationTexture from './textures/SimulationTexture'
 import PingPongTexture from './textures/PingPongTexture'
 
 import Midi from './midi'
@@ -34,18 +34,13 @@ const midi = new Midi({
   noiseSize: 0.5,
   rotation: 0.5,
   zoom: 0.5,
-  alpha: 0.5,
+  alpha: 0.5
 })
 
 const originMeshSequences = [
-  new GeometryMeshSequence('plakat_low', 1, 1),
-  new GeometryMeshSequence('oslo', 1, 1),
-  new GeometryMeshSequence('tree_high', 1, 1),
-  new GeometryMeshSequence('sphere', 1, 1)
-  // new GeometryMeshSequence('sphere', 1, 1),
-  // // new GeometryMeshSequence('move', 1, 1),
-  // new GeometryMeshSequence('spiral', 2, 1),
-  // new GeometryMeshSequence('bird', 170, 20)
+  new GeometryMeshSequence('plane', 1, 1),
+  new GeometryMeshSequence('sphere', 1, 1),
+  new GeometryMeshSequence('spiral', 2, 1)
 ]
 
 const particleMesh = new ParticleMesh(simulationSize)
@@ -55,7 +50,7 @@ const positionShader = new ParticlePositionShader()
 const velocityShader = new ParticleVelocityShader()
 const geometryShader = new GeometryShader()
 
-const forceShaders = mapValues(forces, (force, key) => new force.shader())
+const forceShaders = mapValues(forces, (force, key) => new force.Shader())
 
 // Textures
 const originTextures = map(originMeshes, () => new SimulationTexture(gl, simulationSize))
@@ -81,7 +76,7 @@ let time = 0
 let init = true
 let currentOrigin = 0
 
-gl.onupdate = () => {
+function render () {
   time++
 
   times(4, i => {
@@ -90,13 +85,11 @@ gl.onupdate = () => {
       currentOrigin = i
     }
   })
-}
 
-gl.ondraw = () => {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
   gl.loadIdentity()
-  gl.translate(0, 0, -(1-midi.params.zoom) * 4)
+  gl.translate(0, 0, -(1 - midi.params.zoom) * 4)
   gl.rotate(midi.params.rotation * 180, 0, -1, 0)
 
   originTextures.forEach((texture, i) => {
@@ -232,6 +225,8 @@ gl.ondraw = () => {
   birdTexture.bind(0)
 
   init = false
+
+  window.requestAnimationFrame(render)
 }
 
 window.addEventListener('load', () => {
@@ -241,5 +236,7 @@ window.addEventListener('load', () => {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
   gl.fullscreen()
-  gl.animate()
+  // gl.animate()
+
+  render()
 })
