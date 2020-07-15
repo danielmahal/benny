@@ -13,7 +13,7 @@
     "exports-loader": "^0.6.2",
     "file-loader": "^0.8.4",
     "json-loader": "^0.5.3",
-    "lodash": "^3.10.0",
+    "lodash": "^4.17.19",
     "node-libs-browser": "^0.5.2",
     "nws": "^0.6.1",
     "raw-loader": "^0.5.1",
